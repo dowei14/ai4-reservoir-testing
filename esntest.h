@@ -11,6 +11,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <vector>
+
 
 
 ///////// Save text////////////////////////
@@ -24,7 +26,7 @@ using namespace std;
 //Set parameters (for Students)
 const int num_input_ESN = 18;
 const int num_output_ESN = 7;
-const int num_hidden_ESN = 100; // Student Adjust!***
+const int num_hidden_ESN = 20; // Student Adjust!***
 
 //set learning_mode = 1 for RLS (learning rate or forgetting factor needs to be large, e.g., 0.99)
 //set learning mode =2  for LMS (learning rate needs to be small, e.g., 0.01)
@@ -41,7 +43,7 @@ const double leak = 0.33;
 // if 70 means 70% sparsity; i.e., only 30% input projections to hidden neurons
 const double input_sparsity = 70;
 
-const int testing_start = 40000; /*training after, e.g., 4000 steps for learning modes 1-4 & "TestingData_4900.txt"*/
+const int testing_start = 30000; /*training after, e.g., 4000 steps for learning modes 1-4 & "TestingData_4900.txt"*/
 
 
 
@@ -56,7 +58,7 @@ class TestESN
     // --- Save text------------//
     ofstream saveFile1;
     //-------------------------//
-    double RecurrentNetwork(double i0, double d);
+    double RecurrentNetwork(std::vector<double> i0, std::vector<double> d);
     double target_ESN;
     double input_ESN;
     double output_ESN;

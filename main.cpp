@@ -14,8 +14,8 @@
 #include <string>
 
 //Set parameters (for Students)
-#define NUMBER_DATA  46821 //number of total data (if using Learning mode 1-4 & Testing Data_4900.txt)
-#define BPM_ITER   46821   //set it equal to the number of total data (if using Learning mode 1-4 & Testing Data_4900.txt)
+#define NUMBER_DATA  41878 //number of total data (if using Learning mode 1-4 & Testing Data_4900.txt)
+#define BPM_ITER   41878   //set it equal to the number of total data (if using Learning mode 1-4 & Testing Data_4900.txt)
 
 
 ///////////////////////////////////////////
@@ -62,87 +62,29 @@ int main (int argc, char **argv)
 	std::string line_out;
 	for(std::string line_in; std::getline(data_inputs, line_in); )   //read stream line by line
 	{
-
+		std::vector<double> inputs;
 		// add inputs
 		std::istringstream in(line_in);      //make a stream for the line itself
 		for (int i=0;i<num_input_ESN;i++){
 			in >> input;                  //and read the first whitespace-separated token
+			inputs.push_back(input);
 		}
 
+		std::vector<double> targets;		
 		// add outputs
 		std::getline(data_outputs, line_out);
 		std::istringstream out(line_out);
 		for (int o=0;o<num_output_ESN;o++){
 			out >> target;                  //and read the first whitespace-separated token
+			targets.push_back(target);
 		}
 		
 		//-----------Call ESN, recurrent network------------------//
-		test->RecurrentNetwork(input,target);
+		test->RecurrentNetwork(inputs,targets);
 		//--------------------------------------------------------//
     	std::cout<<"counter"<<" "<<counter<< "\n";
     	counter++;
 	}
-
-
-
-
-/*
-  for (int i=1;i<BPM_ITER;i++) {
-
-    if (use_file_data){
-      //------------Read from the file--------------------------------------------//
-      char str[10];
-
-      //For students
-      //ifstream b_file ("TestingData_4900.txt"); // 2 column data, first column = input, second column = target
-      ifstream b_file ("TestingData_2000.txt"); // 2 column data, first column = input, second column = target
-
-
-      if(!initialized)
-      {i_text_loop = 0;
-      while(b_file>>str) //time first column
-      {
-        input_temp = atof(str);//input
-        m_r0_t.at(i_text_loop) = input_temp;
-
-        b_file>> str;
-        target_temp = atof(str);//target
-        m_r1_t.at(i_text_loop) = target_temp;
-
-        i_text_loop++;
-      }
-      initialized = true;
-      }
-
-      if(ii<i_text_loop)
-      {
-        ii++;
-      }
-      else
-      {
-        ii=0;
-      }
-
-      input = m_r0_t.at(ii);
-      target = m_r1_t.at(ii);
-      //--------------------------------------------------------//
-
-    }
-
-    else {
-      input = input_vector[i];
-      target = train_vector[i];
-    }
-
-    //-----------Call ESN, recurrent network------------------//
-    test->RecurrentNetwork(input,target);
-    //--------------------------------------------------------//
-
-
-    std::cout<<"counter"<<" "<<i<< "\n";
-
-  }
-*/
 
   return 0;
 }

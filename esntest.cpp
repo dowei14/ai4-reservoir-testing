@@ -95,7 +95,7 @@ TestESN::~TestESN()
 // ----------------------------------------------------------------------
 // --- Recurrent Neural Networks  ---------------------------------------
 // ----------------------------------------------------------------------
-double TestESN::RecurrentNetwork (double i0, double d)
+double TestESN::RecurrentNetwork (std::vector<double> i0, std::vector<double> d)
 {
   learn = true;
   static int iteration = 0;
@@ -119,32 +119,58 @@ double TestESN::RecurrentNetwork (double i0, double d)
   }
 
 
-
+	for (int i=0;i<num_input_ESN;i++){
+		ESinput[i] = i0[i];
+	}
+	for (int i=0;i<num_output_ESN;i++){
+		ESTrainOutput[i] = d[i];
+	}
+/*
   ESTrainOutput[0]= d;//target_ESN; //Set Target output to ESN
 
   ESinput[0] = i0;//input_ESN;// Set Input to ESN
-
+*/
   ESN->setInput(ESinput, num_input_ESN/* no. input*/); // Call ESN
 
   //ESN Learning function
   ESN->takeStep(ESTrainOutput, learning_rate_ESN /*0.9 RLS*/, 1 /*no td = 1 else td_error*/, learn/* true= learn, false = not learning learn_critic*/, iteration/*0*/);
 
-  output_ESN = ESN->outputs->val(0, 0);//Read out the output of ESN
+//  output_ESN = ESN->outputs->val(0, 0);//Read out the output of ESN
 
   // ESN->printMatrix(ESN->endweights); //print weight matrix on screen
 
-
+	// only use max value
+	unsigned int maxNum = 0;
+	double max = 0.0;
+	for (unsigned int i=0;i<num_output_ESN;i++){
+		output_ESN = ESN->outputs->val(i, 0);//Read out the output of ESN
+		if (output_ESN > max) maxNum =i;
+	}
     // Calculate online error at each time step
-
-   squared_error = (d-output_ESN)*(d-output_ESN);
-
-   mse += squared_error;
+	for (unsigned int i=0;i<num_output_ESN;i++){
+		double val = 0.0;
+		if (i == maxNum) val = 1.0;
+		squared_error = (d[i]-val)*(d[i]-val);
+		mse += squared_error;
+		saveFile1<<val<<" ";
+	}
+	saveFile1<<"\n";
+/*	
+    // Calculate online error at each time step
+	for (unsigned int i=0;i<num_output_ESN;i++){
+		output_ESN = ESN->outputs->val(i, 0);//Read out the output of ESN
+		squared_error = (d[i]-output_ESN)*(d[i]-output_ESN);
+		mse += squared_error;
+		saveFile1<<output_ESN<<" ";
+	}
+	saveFile1<<"\n";
+*/
 
 
    std::cout<<"Online Training error = "<<squared_error<<std::endl;
 
 
-  saveFile1 <<ESinput[0]<<"  "<<ESTrainOutput[0]<<"  "<<output_ESN<<"  "<<squared_error<<"\n" << flush; //SAVE DATA
+//  saveFile1 <<ESinput[0]<<"  "<<ESTrainOutput[0]<<"  "<<output_ESN<<"  "<<squared_error<<"\n" << flush; //SAVE DATA
 
 }
 
