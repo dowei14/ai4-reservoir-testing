@@ -36,7 +36,7 @@ TestESN::TestESN()
 
   //For students
   ESN = new ESNetwork(num_input_ESN/*no. input*/,num_output_ESN /*no. output*/, num_hidden_ESN /*rc hidden neurons*/, false /*W_back, feedback from output to hiddens*/, false /*feeding input to output*/, leak /*leak = 0.0-1.0*/, false /*IP*/);
-  ESN->outnonlinearity = 2; //0 = linear, 1 = sigmoid (logistic), 2  = tanh: transfer function of an output neuron
+  ESN->outnonlinearity = 1; //0 = linear, 1 = sigmoid (logistic), 2  = tanh: transfer function of an output neuron
   ESN->nonlinearity = 2; //0 = linear, 1 = sigmoid (logistic), 2  = tanh: transfer function of all hidden neurons
   ESN->withRL = 2; //2 = stand ESN learning, 1 = RL with TD learning
 
@@ -75,6 +75,7 @@ TestESN::TestESN()
   //--------------------------Add ESN network--(2)-----------------------------------//
 
   saveFile1.open("result.txt",ios::out);
+  saveFile1.precision(5);
 
 
 
@@ -95,28 +96,27 @@ TestESN::~TestESN()
 // ----------------------------------------------------------------------
 // --- Recurrent Neural Networks  ---------------------------------------
 // ----------------------------------------------------------------------
-double TestESN::RecurrentNetwork (std::vector<double> i0, std::vector<double> d)
+double TestESN::RecurrentNetwork (std::vector<double> i0, std::vector<double> d, bool train)
 {
-  learn = true;
-  static int iteration = 0;
-  static float mse = 0.0;
+  
+	learn = true;
+	static int iteration = 0;
+	static float mse = 0.0;
+	iteration++;
+	
 
-  iteration++;
-
-
-  if (iteration>testing_start || iteration <=washout_time /*washout*/)
-  {
-    learn = false;
-    std::cout<<"**********testing mode***********"<< "\n";
-
-  //  mse = ESN->evaluatePerformance(0,testing_start,target1);
-
-     std::cout<<"Mean squared Training error = "<<(mse/testing_start)<<std::endl;
-  }
-  else
-  {
-    std::cout<<"--training mode--"<< "\n";
-  }
+//	if (train ==false || iteration <=washout_time /*washout*/)
+	if (train ==false)
+	{
+		learn = false;
+//		if (iteration % 1000 ==0) std::cout<<"**********testing mode***********"<< "\n";
+//		if (iteration % 1000 ==0) std::cout<<"Mean squared Training error = "<<mse<<std::endl;
+	}
+	else
+	{
+		mse = 0.0;
+//		if (iteration % 1000 ==0) std::cout<<"--training mode--"<< "\n";
+	}
 
 
 	for (int i=0;i<num_input_ESN;i++){
@@ -125,36 +125,64 @@ double TestESN::RecurrentNetwork (std::vector<double> i0, std::vector<double> d)
 	for (int i=0;i<num_output_ESN;i++){
 		ESTrainOutput[i] = d[i];
 	}
+
+	ESN->setInput(ESinput, num_input_ESN/* no. input*/); // Call ESN
+
+	//ESN Learning function
+	ESN->takeStep(ESTrainOutput, learning_rate_ESN /*0.9 RLS*/, 1 /*no td = 1 else td_error*/, learn/* true= learn, false = not learning learn_critic*/, iteration/*0*/);
+
+//	if (true){
+//	
+	if (train == false){
+		// only use max value
+		unsigned int maxNum = 0;
+		double max = -2.0;
+		for (unsigned int i=0;i<num_output_ESN;i++){
+			output_ESN = ESN->outputs->val(i, 0);//Read out the output of ESN
+			if (output_ESN > max) {
+				maxNum =i;
+				max = output_ESN;
+			}
+		}
+		// Calculate online error at each time step
+		double val = 0.0;
+		squared_error = 0.0;
+		for (unsigned int i=0;i<num_output_ESN;i++){
+			if (i == maxNum) val = 1.0;
+			else val = 0.0;
+			output_ESN = ESN->outputs->val(i, 0);//Read out the output of ESN
+			squared_error += (d[i]-val)*(d[i]-val);
+			saveFile1<<val<<" ";
+		}
+		if (squared_error > 0) mse++;
+		saveFile1<<"\n";
+
+
+//		std::cout<<"Online Training error = "<<mse<<std::endl;
+	}
+	return mse;
+
+}
+
+bool TestESN::store()
+{
+	ESN->writeInnerweightsToFile(1);
+    ESN->writeStartweightsToFile(1);
+    ESN->writeEndweightsToFile(1);
+    ESN->writeInneractivityToFile(1);
+    ESN->writeNoiseToFile(1);
+}
+
+// just for reference, can be deleted later
+//  mse = ESN->evaluatePerformance(0,testing_start,target1);
 /*
   ESTrainOutput[0]= d;//target_ESN; //Set Target output to ESN
 
   ESinput[0] = i0;//input_ESN;// Set Input to ESN
 */
-  ESN->setInput(ESinput, num_input_ESN/* no. input*/); // Call ESN
-
-  //ESN Learning function
-  ESN->takeStep(ESTrainOutput, learning_rate_ESN /*0.9 RLS*/, 1 /*no td = 1 else td_error*/, learn/* true= learn, false = not learning learn_critic*/, iteration/*0*/);
-
 //  output_ESN = ESN->outputs->val(0, 0);//Read out the output of ESN
 
   // ESN->printMatrix(ESN->endweights); //print weight matrix on screen
-
-	// only use max value
-	unsigned int maxNum = 0;
-	double max = 0.0;
-	for (unsigned int i=0;i<num_output_ESN;i++){
-		output_ESN = ESN->outputs->val(i, 0);//Read out the output of ESN
-		if (output_ESN > max) maxNum =i;
-	}
-    // Calculate online error at each time step
-	for (unsigned int i=0;i<num_output_ESN;i++){
-		double val = 0.0;
-		if (i == maxNum) val = 1.0;
-		squared_error = (d[i]-val)*(d[i]-val);
-		mse += squared_error;
-		saveFile1<<val<<" ";
-	}
-	saveFile1<<"\n";
 /*	
     // Calculate online error at each time step
 	for (unsigned int i=0;i<num_output_ESN;i++){
@@ -166,12 +194,6 @@ double TestESN::RecurrentNetwork (std::vector<double> i0, std::vector<double> d)
 	saveFile1<<"\n";
 */
 
-
-   std::cout<<"Online Training error = "<<squared_error<<std::endl;
-
-
 //  saveFile1 <<ESinput[0]<<"  "<<ESTrainOutput[0]<<"  "<<output_ESN<<"  "<<squared_error<<"\n" << flush; //SAVE DATA
-
-}
 
 
