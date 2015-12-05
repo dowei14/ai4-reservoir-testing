@@ -29,23 +29,21 @@ int main (int argc, char **argv)
   // ************ Essential parameter initialization **************
 
   //*****************************************************************
-
-
-  test = new TestESN();
-
-  
-  		
-	
-	bool train = true;
-	int runs = 10;
 	ofstream saveFile1;
 	saveFile1.open("error.txt",ios::out);
 	saveFile1.precision(3);
+for (int a=0;a<5;a++){
+	test = new TestESN();	
+	bool train = true;
+	int runs = 50;
+	
+
 	for (int i=0; i<runs;i++){
 		train = true;
 		std::cout<<"Training run: "<< i<< std::endl;
-		ifstream data_inputs("../data/inRNN_train.txt"); //opening an input stream for file test.txt
-		ifstream data_outputs("../data/outRNN_train.txt"); //opening an input stream for file test.txt
+		ifstream data_inputs("../data/train/inRNN_18.txt"); //opening an input stream for file test.txt
+//		ifstream data_inputs("../data/train/inRNN_11.txt"); //opening an input stream for file test.txt
+		ifstream data_outputs("../data/train/outRNN.txt"); //opening an input stream for file test.txt
 		for(std::string line_in; std::getline(data_inputs, line_in); )   //read stream line by line
 		{
 			std::vector<double> inputs;
@@ -74,8 +72,9 @@ int main (int argc, char **argv)
 		train = false;
 		int counter = 0;
 		double error = 0.0;
-		ifstream data_inputs_test("../data/inRNN_train.txt"); //opening an input stream for file test.txt
-		ifstream data_outputs_test("../data/outRNN_train.txt"); //opening an input stream for file test.txt
+		ifstream data_inputs_test("../data/train/inRNN_18.txt"); //opening an input stream for file test.txt
+//		ifstream data_inputs_test("../data/test/inRNN_11.txt"); //opening an input stream for file test.txt
+		ifstream data_outputs_test("../data/train/outRNN.txt"); //opening an input stream for file test.txt
 		
 
 		for(std::string line_in; std::getline(data_inputs_test, line_in); )   //read stream line by line
@@ -105,9 +104,11 @@ int main (int argc, char **argv)
 			counter++;
 		}
 		std::cout<<"Error: " << error <<" "<< counter<< " " <<error / (double)counter<<std::endl;
-		saveFile1 << i*10 << " " <<error / (double)counter <<"\n";
+		saveFile1 << (i+1)*10 << " " <<error / (double)counter <<"\n";
 	}
 	test->store();
+}	
+	
 	saveFile1.close();
 
   return 0;
