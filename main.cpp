@@ -41,8 +41,8 @@ for (int a=0;a<5;a++){
 	for (int i=0; i<runs;i++){
 		train = true;
 		std::cout<<"Training run: "<< i<< std::endl;
-		ifstream data_inputs("../data/train/inRNN_18.txt"); //opening an input stream for file test.txt
-//		ifstream data_inputs("../data/train/inRNN_11.txt"); //opening an input stream for file test.txt
+//		ifstream data_inputs("../data/train/inRNN_18.txt"); //opening an input stream for file test.txt
+		ifstream data_inputs("../data/train/inRNN_11.txt"); //opening an input stream for file test.txt
 		ifstream data_outputs("../data/train/outRNN.txt"); //opening an input stream for file test.txt
 		for(std::string line_in; std::getline(data_inputs, line_in); )   //read stream line by line
 		{
@@ -72,8 +72,8 @@ for (int a=0;a<5;a++){
 		train = false;
 		int counter = 0;
 		double error = 0.0;
-		ifstream data_inputs_test("../data/train/inRNN_18.txt"); //opening an input stream for file test.txt
-//		ifstream data_inputs_test("../data/test/inRNN_11.txt"); //opening an input stream for file test.txt
+//		ifstream data_inputs_test("../data/train/inRNN_18.txt"); //opening an input stream for file test.txt
+		ifstream data_inputs_test("../data/train/inRNN_11.txt"); //opening an input stream for file test.txt
 		ifstream data_outputs_test("../data/train/outRNN.txt"); //opening an input stream for file test.txt
 		
 
