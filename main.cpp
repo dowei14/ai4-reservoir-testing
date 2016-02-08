@@ -32,18 +32,27 @@ int main (int argc, char **argv)
 	ofstream saveFile1;
 	saveFile1.open("error.txt",ios::out);
 	saveFile1.precision(3);
-for (int a=0;a<5;a++){
+
+int repretitions = 1;
+int runs = 50;
+
+
+for (int a=0;a<repretitions;a++){
 	test = new TestESN();	
-	bool train = true;
-	int runs = 50;
-	
+	bool train = true;	
 
 	for (int i=0; i<runs;i++){
 		train = true;
 		std::cout<<"Training run: "<< i<< std::endl;
 //		ifstream data_inputs("../data/train/inRNN_18.txt"); //opening an input stream for file test.txt
-		ifstream data_inputs("../data/train/inRNN_11.txt"); //opening an input stream for file test.txt
-		ifstream data_outputs("../data/train/outRNN.txt"); //opening an input stream for file test.txt
+//		ifstream data_inputs("../data/train/inRNN_11.txt"); //opening an input stream for file test.txt
+//		ifstream data_outputs("../data/train/outRNN_binary.txt"); //opening an input stream for file test.txt
+
+		ifstream data_inputs("../data/train/inRNN_12.txt"); //opening an input stream for file test.txt
+		ifstream data_outputs("../data/train/outRNN_scalar.txt"); //opening an input stream for file test.txt
+		
+		
+		
 		for(std::string line_in; std::getline(data_inputs, line_in); )   //read stream line by line
 		{
 			std::vector<double> inputs;
@@ -72,10 +81,13 @@ for (int a=0;a<5;a++){
 		train = false;
 		int counter = 0;
 		double error = 0.0;
-//		ifstream data_inputs_test("../data/train/inRNN_18.txt"); //opening an input stream for file test.txt
-		ifstream data_inputs_test("../data/train/inRNN_11.txt"); //opening an input stream for file test.txt
-		ifstream data_outputs_test("../data/train/outRNN.txt"); //opening an input stream for file test.txt
-		
+	
+//		ifstream data_inputs_test("../data/test/inRNN_18.txt"); //opening an input stream for file test.txt
+//		ifstream data_inputs_test("../data/test/inRNN_11.txt"); //opening an input stream for file test.txt
+//		ifstream data_outputs_test("../data/test/outRNN_binary.txt"); //opening an input stream for file test.txt
+
+		ifstream data_inputs_test("../data/test/inRNN_12.txt"); //opening an input stream for file test.txt		
+		ifstream data_outputs_test("../data/test/outRNN_scalar.txt"); //opening an input stream for file test.txt	
 
 		for(std::string line_in; std::getline(data_inputs_test, line_in); )   //read stream line by line
 		{
@@ -96,7 +108,6 @@ for (int a=0;a<5;a++){
 				out >> target;                  //and read the first whitespace-separated token
 				targets.push_back(target);
 			}
-		
 			//-----------Call ESN, recurrent network------------------//
 			error = test->RecurrentNetwork(inputs,targets, train);
 			//--------------------------------------------------------//
@@ -106,7 +117,10 @@ for (int a=0;a<5;a++){
 		std::cout<<"Error: " << error <<" "<< counter<< " " <<error / (double)counter<<std::endl;
 		saveFile1 << (i+1)*10 << " " <<error / (double)counter <<"\n";
 	}
+	/*****
+	** Store network
 	test->store();
+	****/
 }	
 	
 	saveFile1.close();

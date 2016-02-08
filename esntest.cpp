@@ -134,28 +134,43 @@ double TestESN::RecurrentNetwork (std::vector<double> i0, std::vector<double> d,
 //	if (true){
 //	
 	if (train == false){
-		// only use max value
-		unsigned int maxNum = 0;
-		double max = -2.0;
-		for (unsigned int i=0;i<num_output_ESN;i++){
-			output_ESN = ESN->outputs->val(i, 0);//Read out the output of ESN
-			if (output_ESN > max) {
-				maxNum =i;
-				max = output_ESN;
+		if (num_output_ESN > 1){
+			/**********
+			** calculation with multiple outputs
+			**********/
+			// only use max value
+			unsigned int maxNum = 0;
+			double max = -2.0;
+			for (unsigned int i=0;i<num_output_ESN;i++){
+				output_ESN = ESN->outputs->val(i, 0);//Read out the output of ESN
+				if (output_ESN > max) {
+					maxNum =i;
+					max = output_ESN;
+				}
 			}
+			// Calculate online error at each time step
+			double val = 0.0;
+			squared_error = 0.0;
+			for (unsigned int i=0;i<num_output_ESN;i++){
+				if (i == maxNum) val = 1.0;
+				else val = 0.0;
+				output_ESN = ESN->outputs->val(i, 0);//Read out the output of ESN
+				squared_error += (d[i]-val)*(d[i]-val);
+				saveFile1<<val<<" ";
+			}
+			if (squared_error > 0) mse++;
+			saveFile1<<"\n";
+		} else {
+			/**********
+			** this is with a single state variable
+			**********/
+			double error = d[0] - ESN->outputs->val(0, 0);
+			saveFile1<< d[0] << " " << ESN->outputs->val(0, 0)<<"\n";
+			error = error * error;
+//			saveFile1<<error<<"\n";
+			mse += error;
 		}
-		// Calculate online error at each time step
-		double val = 0.0;
-		squared_error = 0.0;
-		for (unsigned int i=0;i<num_output_ESN;i++){
-			if (i == maxNum) val = 1.0;
-			else val = 0.0;
-			output_ESN = ESN->outputs->val(i, 0);//Read out the output of ESN
-			squared_error += (d[i]-val)*(d[i]-val);
-			saveFile1<<val<<" ";
-		}
-		if (squared_error > 0) mse++;
-		saveFile1<<"\n";
+		
 
 
 //		std::cout<<"Online Training error = "<<mse<<std::endl;
@@ -172,6 +187,8 @@ bool TestESN::store()
     ESN->writeInneractivityToFile(1);
     ESN->writeNoiseToFile(1);
 }
+
+
 
 // just for reference, can be deleted later
 //  mse = ESN->evaluatePerformance(0,testing_start,target1);

@@ -24,9 +24,11 @@ using namespace std;
 
 
 //Set parameters (for Students)
+const int num_input_ESN = 12;
+const int num_output_ESN = 1;
 //const int num_input_ESN = 18;
-const int num_input_ESN = 11;
-const int num_output_ESN = 7;
+//const int num_input_ESN = 11;
+//const int num_output_ESN = 7;
 const int num_hidden_ESN = 50; // Student Adjust!***
 
 //set learning_mode = 1 for RLS (learning rate or forgetting factor needs to be large, e.g., 0.99)
